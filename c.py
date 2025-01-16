@@ -1,14 +1,14 @@
 import sys
 import os
+import time
 
 os.system("cls")
 from typing import List
+import json
+import pathlib
+import dotenv
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
-import dotenv
-import time
-import pathlib
-import json
 
 dotenv.load_dotenv()
 
@@ -21,10 +21,9 @@ def get_config():
 
 
 GEMINI_MODEL = os.environ.get("GEMINI_MODEL")
-GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 CONFIG = get_config()
 
-model = ChatGoogleGenerativeAI(model=GEMINI_MODEL, api_key=GEMINI_API_KEY)
+model = ChatGoogleGenerativeAI(model=GEMINI_MODEL)
 convo = [
     SystemMessage(
         "You are a chatbot named cloff. You answer human's queries as concisely as possible."
@@ -78,7 +77,7 @@ if __name__ == "__main__":
                     print(tutil.cloff_text(ch), end="")
                     response += ch
                     # time.sleep(0.001)
-            print("\t" + tutil.grey(f"({time.time() - start:.2f}s)"), end="")
+            print(tutil.grey(f"({time.time() - start:.2f}s)"), end="")
             convo.append(AIMessage(response))
             print("\n")
         except KeyboardInterrupt:
