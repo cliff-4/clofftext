@@ -1,4 +1,3 @@
-import sys
 import os
 import time
 
@@ -210,6 +209,12 @@ if __name__ == "__main__":
             start = time.time()
             print(tutil.as_cloff(), end="")
             st = CONFIG.model.stream(CONFIG.convo.history)
+            cnt = 0
+            while not st:  # todo: fix this
+                # print("." * cnt, end="\b" * cnt)
+                print("lmao")
+                cnt = (cnt + 1) % 3
+                time.sleep(0.3)
             for i, msg in enumerate(st):
                 for ch in msg.content:
                     print(tutil.cloff_text(ch), end="")
