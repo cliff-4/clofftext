@@ -64,6 +64,25 @@ class tutil:
     def grey(text: str) -> str:
         return tutil.to_RGB(text, [179, 179, 179])
 
+class Convo:
+    def __init__(self):
+        self.first_of_cloff = "Hello! What would you like to know?"
+        self.last_of_cloff = self.first_of_cloff
+
+        self.reset()
+
+    def append_as(self, text: str, MessageType: BaseMessage):
+        self.history.append(MessageType(text))
+        if type(MessageType) == AIMessage:
+            self.last_of_cloff = text
+
+    def reset(self):
+        self.history: List[BaseMessage] = []
+        self.append_as(
+            "You are a chatbot named cloff. You answer human's queries as concisely as possible.",
+            SystemMessage,
+        )
+        self.append_as("Hello! What would you like to know?", AIMessage)
 
 if __name__ == "__main__":
     print(f"{tutil.cloff_tag('[cloff]')} {tutil.cloff_text(convo[-1].content)}\n")
