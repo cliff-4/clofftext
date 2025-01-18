@@ -51,19 +51,35 @@ class tutil:
         return f"\033[38;2;{r};{g};{b}m{text}\033[0;0m"
 
     def cloff_tag(text: str) -> str:
-        return tutil.to_RGB(text, CONFIG["cloff"]["tag"])
+        return tutil.to_RGB(text, CONFIG.cloff["tag"])
 
     def cloff_text(text: str) -> str:
-        return tutil.to_RGB(text, CONFIG["cloff"]["text"])
+        return tutil.to_RGB(text, CONFIG.cloff["text"])
 
     def human_tag(text: str) -> str:
-        return tutil.to_RGB(text, CONFIG["human"]["tag"])
+        return tutil.to_RGB(text, CONFIG.human["tag"])
 
     def human_text(text: str) -> str:
-        return tutil.to_RGB(text, CONFIG["human"]["text"])
+        return tutil.to_RGB(text, CONFIG.human["text"])
 
     def grey(text: str) -> str:
         return tutil.to_RGB(text, [179, 179, 179])
+
+    def red(text: str) -> str:
+        return tutil.to_RGB(text, [197, 15, 31])
+
+    def green(text: str) -> str:
+        return tutil.to_RGB(text, [22, 198, 12])
+
+    def as_cloff(text: str = "") -> str:
+        return f"{tutil.cloff_tag(' [cloff]')} {tutil.cloff_text(text)}"
+
+    def as_system(text: str) -> str:
+        return f"{tutil.grey('[system]')} {tutil.grey(text)}"
+
+    def as_you(text: str = "") -> str:
+        return f"{tutil.human_tag('   [you]')} {tutil.human_text(text)}"
+
 
 class Convo:
     def __init__(self):
