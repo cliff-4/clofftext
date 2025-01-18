@@ -8,8 +8,8 @@ import json
 import pathlib
 import dotenv
 from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain_core.messages.base import BaseMessage
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
+import re
 
 dotenv.load_dotenv()
 
@@ -20,12 +20,6 @@ class Config:
         path = pathlib.Path(__file__).parent / "config.json"
         txt = path.read_text()
         config = json.loads(txt)
-
-        # Configure LLM
-        GEMINI_MODEL = os.environ.get("GEMINI_MODEL")
-        self.model = ChatGoogleGenerativeAI(model=GEMINI_MODEL)
-
-        # Storing in self
         try:
             self.cloff: Dict[str, List[int]] = {
                 "tag": config["cloff"]["tag"],
@@ -36,9 +30,20 @@ class Config:
                 "text": config["human"]["text"],
             }
             self.showstats: bool = config["showstats"]
-            self.special_keywords = ["clear", "exit", "reset", "history", "help"]
         except KeyError:
             raise ValueError("Invalid config.json")
+
+        # Defaults
+        self.convo: Convo = None
+        self.special_keywords: List[str] = []
+        self.help = """Welcome to cloff! Type your message and press enter to get a response.
+
+Special Keywords:
+"""
+
+        # Configure LLM
+        self.modelname = os.environ.get("GEMINI_MODEL")
+        self.model = ChatGoogleGenerativeAI(model=self.modelname)
 
 
 CONFIG = Config()
@@ -88,31 +93,32 @@ class Convo:
 
         self.reset()
 
-    def append_as(self, text: str, MessageType: BaseMessage):
-        self.history.append(MessageType(text))
-        if type(MessageType) == AIMessage:
-            self.last_of_cloff = text
+    def append(self, msg: AIMessage | HumanMessage | SystemMessage):
+        self.history.append(msg)
+        if msg.type == "ai":
+            self.last_of_cloff = msg.content
 
     def reset(self):
-        self.history: List[BaseMessage] = []
-        self.append_as(
-            "You are a chatbot named cloff. You answer human's queries as concisely as possible.",
-            SystemMessage,
+        self.history: List[AIMessage | HumanMessage | SystemMessage] = []
+        self.append(
+            SystemMessage(
+                "You are a chatbot named cloff. You answer human's queries as concisely as possible."
+            )
         )
-        self.append_as("Hello! What would you like to know?", AIMessage)
+        self.append(AIMessage(self.first_of_cloff))
 
 
-def get_stats(start: float, tokens: int | None = None):
+def get_stats(start: float, words: int | None = None):
     if not CONFIG.showstats:
         return ""
     elapsed = time.time() - start
     s = tutil.grey(f"({time.time() - start:.2f}s")
-    if tokens:
-        tps = tokens / elapsed
-        g = f"tps {tps:.2f}"
-        if tps < 5:
+    if words:
+        wps = words / elapsed
+        g = f"wps {wps:.2f}"
+        if wps < 5:
             g = tutil.red(g)
-        elif tps < 10:
+        elif wps < 10:
             g = tutil.grey(g)
         else:
             g = tutil.green(g)
@@ -165,10 +171,9 @@ help - Show this message
                     )
                 continue
 
-            CONFIG.convo.append_as(user_input, HumanMessage)
+            CONFIG.convo.append(HumanMessage(user_input))
             response = ""
             start = time.time()
-            tokens = 0
             print(tutil.as_cloff(), end="")
             st = CONFIG.model.stream(CONFIG.convo.history)
             for i, msg in enumerate(st):
@@ -176,8 +181,8 @@ help - Show this message
                     print(tutil.cloff_text(ch), end="")
                     response += ch
                     # time.sleep(0.001)
-            print(get_stats(start, tokens), end="\n\n")
-            CONFIG.convo.append_as(response, AIMessage)
+            print(get_stats(start, len(re.findall(r"\w+", response))), end="\n\n")
+            CONFIG.convo.append(AIMessage(response))
         except KeyboardInterrupt:
             print(f"""\n\n{tutil.as_system("Type 'exit' to exit.")}\n""")
             continue
