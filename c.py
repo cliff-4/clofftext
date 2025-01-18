@@ -13,23 +13,34 @@ from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 dotenv.load_dotenv()
 
 
-def get_config():
-    path = pathlib.Path(__file__).parent / "config.json"
-    txt = path.read_text()
-    config = json.loads(txt)
-    return config
+class Config:
+    def __init__(self):
+        # Load config
+        path = pathlib.Path(__file__).parent / "config.json"
+        txt = path.read_text()
+        config = json.loads(txt)
+
+        # Configure LLM
+        GEMINI_MODEL = os.environ.get("GEMINI_MODEL")
+        self.model = ChatGoogleGenerativeAI(model=GEMINI_MODEL)
+
+        # Storing in self
+        try:
+            self.cloff: Dict[str, List[int]] = {
+                "tag": config["cloff"]["tag"],
+                "text": config["cloff"]["text"],
+            }
+            self.human: Dict[str, List[int]] = {
+                "tag": config["human"]["tag"],
+                "text": config["human"]["text"],
+            }
+            self.showstats: bool = config["showstats"]
+            self.special_keywords = ["clear", "exit", "reset", "history", "help"]
+        except KeyError:
+            raise ValueError("Invalid config.json")
 
 
-GEMINI_MODEL = os.environ.get("GEMINI_MODEL")
-CONFIG = get_config()
-
-model = ChatGoogleGenerativeAI(model=GEMINI_MODEL)
-convo = [
-    SystemMessage(
-        "You are a chatbot named cloff. You answer human's queries as concisely as possible."
-    ),
-    AIMessage("Hello! What would you like to know?"),
-]
+CONFIG = Config()
 
 
 class tutil:
