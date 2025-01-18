@@ -118,7 +118,7 @@ class SpecialFuncs:
         }
 
     def clear() -> bool:
-        """Clear the screen"""
+        """Clear the screen. Conversation history is preserved"""
         os.system("cls")
         print(tutil.as_cloff(CONFIG.convo.last_of_cloff), end="\n\n")
         return False
@@ -128,13 +128,13 @@ class SpecialFuncs:
         return True
 
     def reset() -> bool:
-        """Reset the conversation and clear chat history"""
+        """Reset the conversation history"""
         CONFIG.convo.reset()
         print(tutil.as_system("Conversation reset\n"))
         return False
 
     def history() -> bool:
-        """Show the conversation history"""
+        """Show the conversation history in memory"""
         r = [tutil.grey("== Conversation History ==")]
         for msg in CONFIG.convo.history:
             if msg.type == "system":
@@ -154,7 +154,7 @@ class SpecialFuncs:
         return False
 
     def stats() -> bool:
-        """Toggle showing stats"""
+        """Toggle showing stats (on by default)"""
         CONFIG.showstats = not CONFIG.showstats
         print(
             tutil.as_system(
