@@ -3,7 +3,7 @@ import os
 import time
 
 os.system("cls")
-from typing import List, Dict
+from typing import List, Dict, Callable
 import json
 import pathlib
 import dotenv
@@ -108,6 +108,64 @@ class Convo:
         self.append(AIMessage(self.first_of_cloff))
 
 
+class SpecialFuncs:
+    def func_map(self) -> Dict[str, Callable[[], bool]]:
+        return {
+            func_name: getattr(self, func_name)
+            for func_name in dir(self)
+            if callable(getattr(self, func_name))
+            and not func_name.startswith("_")
+            and not func_name == "func_map"
+        }
+
+    def clear() -> bool:
+        """Clear the screen"""
+        os.system("cls")
+        print(tutil.as_cloff(CONFIG.convo.last_of_cloff), end="\n\n")
+        return False
+
+    def exit() -> bool:
+        """Exit the program"""
+        return True
+
+    def reset() -> bool:
+        """Reset the conversation and clear chat history"""
+        CONFIG.convo.reset()
+        print(tutil.as_system("Conversation reset\n"))
+        return False
+
+    def history() -> bool:
+        """Show the conversation history"""
+        r = [tutil.grey("== Conversation History ==")]
+        for msg in CONFIG.convo.history:
+            if msg.type == "system":
+                r.append(tutil.as_system(msg.content))
+            if msg.type == "ai":
+                r.append(tutil.as_cloff(msg.content))
+            if msg.type == "human":
+                r.append(tutil.as_you(msg.content))
+        r.append(tutil.grey("== End of Conversation History =="))
+        r.append(tutil.grey(f"Messages: {len(CONFIG.convo.history)}"))
+        print("\n".join(r), end="\n\n")
+        return False
+
+    def help() -> bool:
+        """Show this message"""
+        print(tutil.as_system(CONFIG.help))
+        return False
+
+    def stats() -> bool:
+        """Toggle showing stats"""
+        CONFIG.showstats = not CONFIG.showstats
+        print(
+            tutil.as_system(
+                f"Stats are now {'enabled' if CONFIG.showstats else 'disabled'}"
+            ),
+            end="\n\n",
+        )
+        return False
+
+
 def get_stats(start: float, words: int | None = None):
     if not CONFIG.showstats:
         return ""
@@ -129,6 +187,11 @@ def get_stats(start: float, words: int | None = None):
 
 if __name__ == "__main__":
     CONFIG.convo = Convo()
+    CONFIG.special_keywords = list(SpecialFuncs().func_map().keys())
+    for k in CONFIG.special_keywords:
+        f = getattr(SpecialFuncs, k)
+        CONFIG.help += f"{k} - {f.__doc__}\n"
+
     print(tutil.as_system("Welcome to cloff! Type 'help' for help."), end="\n\n")
     print(tutil.as_cloff(CONFIG.convo.first_of_cloff), end="\n\n")
     while True:
@@ -137,38 +200,9 @@ if __name__ == "__main__":
             print()
 
             if user_input in CONFIG.special_keywords:
-                if user_input == "exit":
+                fn = getattr(SpecialFuncs, user_input)
+                if fn():
                     break
-                elif user_input == "clear":
-                    os.system("cls")
-                    print(tutil.as_cloff(CONFIG.convo.last_of_cloff), end="\n\n")
-                elif user_input == "reset":
-                    CONFIG.convo.reset()
-                    print(tutil.as_system("Conversation reset\n"))
-                elif user_input == "history":
-                    r = [tutil.grey("== Conversation History ==")]
-                    for msg in CONFIG.convo.history:
-                        if msg.type == "system":
-                            r.append(tutil.as_system(msg.content))
-                        if msg.type == "ai":
-                            r.append(tutil.as_cloff(msg.content))
-                        if msg.type == "human":
-                            r.append(tutil.as_you(msg.content))
-                    r.append(tutil.grey("== End of Conversation History =="))
-                    r.append(tutil.grey(f"Messages: {len(CONFIG.convo.history)}"))
-                    print("\n".join(r), end="\n\n")
-                elif user_input == "help":
-                    print(
-                        tutil.as_system(
-                            """Special Keywords:
-clear - Clear the screen
-exit - Exit the program
-reset - Reset the conversation
-history - Show the conversation history
-help - Show this message
-"""
-                        )
-                    )
                 continue
 
             CONFIG.convo.append(HumanMessage(user_input))
