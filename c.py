@@ -102,7 +102,12 @@ class Convo:
         self.history: List[AIMessage | HumanMessage | SystemMessage] = []
         self.append(
             SystemMessage(
-                "You are a chatbot named cloff. You answer human's queries as concisely as possible."
+                """
+You are a chatbot named cloff.
+You answer human's queries as concisely as possible.
+Full stops should always be followed by a single new line character '
+'.
+""".strip()
             )
         )
         self.append(AIMessage(self.first_of_cloff))
@@ -182,7 +187,8 @@ def get_stats(start: float, words: int | None = None):
             g = tutil.green(g)
         s = s + tutil.grey(" | ") + g
     s += tutil.grey(")")
-    return s
+    # return s
+    return "\n" + s
 
 
 def main():
