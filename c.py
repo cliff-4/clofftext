@@ -1,3 +1,4 @@
+import sys
 import os
 import time
 
@@ -184,7 +185,7 @@ def get_stats(start: float, words: int | None = None):
     return s
 
 
-if __name__ == "__main__":
+def main():
     CONFIG.convo = Convo()
     CONFIG.special_keywords = list(SpecialFuncs().func_map().keys())
     for k in CONFIG.special_keywords:
@@ -225,3 +226,8 @@ if __name__ == "__main__":
         except KeyboardInterrupt:
             print(f"""\n\n{tutil.as_system("Type 'exit' to exit.")}\n""")
             continue
+
+
+if __name__ == "__main__":
+    main()
+    sys.exit(0)
