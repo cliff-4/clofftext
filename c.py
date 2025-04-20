@@ -208,7 +208,7 @@ def main():
         f = getattr(SpecialFuncs, k)
         CONFIG.help += f"{k} - {f.__doc__}\n"
 
-    print(tutil.as_system("Welcome to cloff! Type 'help' for help."), end="\n\n")
+    print(tutil.as_system("Welcome to cloff! Type 'help' or '?' for help."), end="\n\n")
     print(tutil.as_cloff(CONFIG.convo.first_of_cloff), end="\n\n")
     while True:
         try:
@@ -218,6 +218,10 @@ def main():
             if user_input in CONFIG.special_keywords:
                 fn = getattr(SpecialFuncs, user_input)
                 if fn():
+                    break
+                continue
+            elif user_input == "?":
+                if SpecialFuncs.help():
                     break
                 continue
 
