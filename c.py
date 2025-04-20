@@ -89,7 +89,9 @@ class tutil:
     def as_cloff(text: str = "") -> str:
         return f"{tutil.cloff_tag(' [cloff]')} {tutil.cloff_text(text)}"
 
-    def as_system(text: str) -> str:
+    def as_system(text: str, isError: bool = False) -> str:
+        if isError:
+            return f"{tutil.red('[system]')} {tutil.red(text)}"
         return f"{tutil.grey('[system]')} {tutil.grey(text)}"
 
     def as_you(text: str = "") -> str:
@@ -169,8 +171,22 @@ class SpecialFuncs:
         print(tutil.as_system(CONFIG.help))
         return False
 
-    def stats() -> bool:  # TODO: update config.json
+    def stats() -> bool:
         """Toggle showing stats (on by default)"""
+        path = pathlib.Path(__file__).parent / "config.json"
+        try:
+            txt = path.read_text()
+            config = json.loads(txt)
+            config["showstats"] = not CONFIG.showstats
+            path.write_text(json.dumps(config, indent=4))
+        except FileNotFoundError:
+            print(
+                tutil.as_system(
+                    "An error occured while updating config.json, stat setting will not be saved for next session.\n",
+                    True,
+                )
+            )
+
         CONFIG.showstats = not CONFIG.showstats
         print(
             tutil.as_system(
