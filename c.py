@@ -13,6 +13,15 @@ import re
 
 dotenv.load_dotenv()
 
+# TODO : 1
+# Add profile for each user input by adding 'p1', 'p2', etc. at the start of the text.
+# Example:
+# - p1: quick, concise and short with examples if needed
+# - p2: detailed response
+
+# TODO : 2
+# Add latex support for math equations, if possible
+
 
 class Config:
     def __init__(self):
@@ -36,10 +45,11 @@ class Config:
         # Defaults
         self.convo: Convo = None
         self.special_keywords: List[str] = []
-        self.help = """Welcome to cloff! Type your message and press enter to get a response.
+        self.help = """
+Welcome to cloff! Type your message and press enter to get a response.
 
 Special Keywords:
-"""
+""".lstrip()
 
         # Configure LLM
         self.modelname = os.environ.get("GEMINI_MODEL")
@@ -217,16 +227,15 @@ def main():
             print(tutil.as_cloff(), end="")
             st = CONFIG.model.stream(CONFIG.convo.history)
             cnt = 0
-            while not st:  # todo: fix this
+            while not st:  # TODO: fix this
                 # print("." * cnt, end="\b" * cnt)
                 print("lmao")
                 cnt = (cnt + 1) % 3
                 time.sleep(0.3)
-            for i, msg in enumerate(st):
+            for msg in st:
                 for ch in msg.content:
                     print(tutil.cloff_text(ch), end="")
                     response += ch
-                    # time.sleep(0.001)
             print(get_stats(start, len(re.findall(r"\w+", response))), end="\n\n")
             CONFIG.convo.append(AIMessage(response))
         except KeyboardInterrupt:
