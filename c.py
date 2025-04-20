@@ -169,7 +169,7 @@ class SpecialFuncs:
         print(tutil.as_system(CONFIG.help))
         return False
 
-    def stats() -> bool:
+    def stats() -> bool:  # TODO: update config.json
         """Toggle showing stats (on by default)"""
         CONFIG.showstats = not CONFIG.showstats
         print(
